@@ -13,30 +13,6 @@ import it.polito.tdp.extflightdelays.model.Airport;
 import it.polito.tdp.extflightdelays.model.Flight;
 
 public class ExtFlightDelaysDAO {
-
-	public List<String> loadAllStates(){
-		String sql = "SELECT distinct(STATE) from airports";
-		List<String> result = new ArrayList<String>();
-
-		try {
-			Connection conn = DBConnect.getConnection();
-			PreparedStatement st = conn.prepareStatement(sql);
-			ResultSet rs = st.executeQuery();
-
-			while (rs.next()) {
-				result.add(rs.getString("STATE"));
-			}
-
-			conn.close();
-			return result;
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("Errore connessione al database");
-			throw new RuntimeException("Error Connection Database");
-		}
-	}
-	
 	public List<Airline> loadAllAirlines() {
 		String sql = "SELECT * from airlines";
 		List<Airline> result = new ArrayList<Airline>();
@@ -114,5 +90,55 @@ public class ExtFlightDelaysDAO {
 			System.out.println("Errore connessione al database");
 			throw new RuntimeException("Error Connection Database");
 		}
+	}
+	
+	public List<String> loadAllStates()
+	{
+		String sql="SELECT DISTINCT ai.STATE AS stato\n" + 
+				"FROM airports ai\n" + 
+				"ORDER BY stato asc";
+		List<String> result = new ArrayList<String>();
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				result.add(rs.getString("stato"));
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+
+	}
+	public List<CoppiaAirports>loadAllCouples()
+	{
+		String sql="SELECT a1.STATE AS stato1, a2.STATE AS stato2, COUNT(DISTINCT f1.TAIL_NUMBER) AS peso\n" + 
+				"FROM flights f1, airports a1, airports a2\n" + 
+				"WHERE f1.ORIGIN_AIRPORT_ID=a1.ID\n" + 
+				"AND f1.DESTINATION_AIRPORT_ID=a2.ID\n" + 
+				"AND a1.STATE<>a2.STATE\n" + 
+				"GROUP BY a1.STATE, a2.STATE";
+		List<CoppiaAirports> result = new ArrayList<CoppiaAirports>();
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				result.add(new CoppiaAirports(rs.getString("stato1"),rs.getString("stato2"),rs.getInt("peso")));
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+
 	}
 }

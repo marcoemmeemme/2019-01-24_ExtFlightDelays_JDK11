@@ -1,8 +1,10 @@
 package it.polito.tdp.extflightdelays;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.extflightdelays.db.CoppiaAirports;
 import it.polito.tdp.extflightdelays.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,7 +30,7 @@ public class FXMLController {
     private Button btnCreaGrafo;
 
     @FXML
-    private ComboBox<?> cmbBoxStati;
+    private ComboBox<String> cmbBoxStati;
 
     @FXML
     private Button btnVisualizzaVelivoli;
@@ -44,7 +46,10 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	txtResult.appendText(this.model.creaGrafo());
+    	this.cmbBoxStati.getItems().addAll(this.model.getStati());
+    	return;
     }
 
     @FXML
@@ -54,7 +59,23 @@ public class FXMLController {
 
     @FXML
     void doVisualizzaVelivoli(ActionEvent event) {
-
+    	String s=this.cmbBoxStati.getValue();
+    	if(s!=null)
+    	{
+    		this.txtResult.clear();
+    		List<CoppiaAirports> coppie=this.model.visualizzaVelivoli(s);
+    		this.txtResult.appendText("Velivoli in partenza da"+s+":\n ");
+    		for(CoppiaAirports ca:coppie)
+    		{
+    			this.txtResult.appendText(ca.getA2()+", peso: "+ca.getPeso()+"\n");
+    		}
+    		return;
+    	}
+    	else
+    	{
+    		txtResult.setText("Inserisci valore valido!\n");
+    		return;
+    	}
     }
 
     @FXML
